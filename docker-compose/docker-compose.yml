@@ -186,23 +186,23 @@ services:
       hostname: 'sqlpad'
       ports:
          - '3000:3000'
-   environment:
-      SQLPAD_ADMIN: ${LOGIN}
-      SQLPAD_ADMIN_PASSWORD: ${PASSWORD}
-      SQLPAD_APP_LOG_LEVEL: debug
-      SQLPAD_WEB_LOG_LEVEL: warn
-      SQLPAD_SEED_DATA_PATH: /etc/sqlpad/seed-data
-      SQLPAD_CONNECTIONS__pgdemo__name: Postgres demo
-      SQLPAD_CONNECTIONS__pgdemo__driver: postgres
-      SQLPAD_CONNECTIONS__pgdemo__host: postgres
-      SQLPAD_CONNECTIONS__pgdemo__database: sqlpad
-      SQLPAD_CONNECTIONS__pgdemo__username: sqlpad
-      SQLPAD_CONNECTIONS__pgdemo__password: sqlpad
-      SQLPAD_CONNECTIONS__pgdemo__multiStatementTransactionEnabled: 'true'
-      SQLPAD_CONNECTIONS__pgdemo__idleTimeoutSeconds: 86400
-   volumes:
-      - ./seed-data:/etc/sqlpad/seed-data
-   networks:
+      environment:
+         SQLPAD_ADMIN: ${LOGIN}
+         SQLPAD_ADMIN_PASSWORD: ${PASSWORD}
+         SQLPAD_APP_LOG_LEVEL: debug
+         SQLPAD_WEB_LOG_LEVEL: warn
+         SQLPAD_SEED_DATA_PATH: /etc/sqlpad/seed-data
+         SQLPAD_CONNECTIONS__pgdemo__name: Postgres demo
+         SQLPAD_CONNECTIONS__pgdemo__driver: postgres
+         SQLPAD_CONNECTIONS__pgdemo__host: postgres
+         SQLPAD_CONNECTIONS__pgdemo__database: sqlpad
+         SQLPAD_CONNECTIONS__pgdemo__username: sqlpad
+         SQLPAD_CONNECTIONS__pgdemo__password: sqlpad
+         SQLPAD_CONNECTIONS__pgdemo__multiStatementTransactionEnabled: 'true'
+         SQLPAD_CONNECTIONS__pgdemo__idleTimeoutSeconds: 86400
+      volumes:
+         - ./seed-data:/etc/sqlpad/seed-data
+      networks:
          - replnet
 
 volumes:
