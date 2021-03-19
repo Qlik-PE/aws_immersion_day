@@ -56,7 +56,7 @@ services:
       environment:
          - POSTGRES_USER=${USERNAME}
          - POSTGRES_PASSWORD=${PASSWORD}
-         - POSTGRES_DB=testdrive
+         - POSTGRES_DB=qlikdb
          - PGDATA=/var/lib/postgresql/data
       restart: always
       volumes:
@@ -204,7 +204,7 @@ services:
          SQLPAD_CONNECTIONS__pgdemo__name: postgres-tgt-databse
          SQLPAD_CONNECTIONS__pgdemo__driver: postgres
          SQLPAD_CONNECTIONS__pgdemo__host: postgresdb
-         SQLPAD_CONNECTIONS__pgdemo__database: testdrive
+         SQLPAD_CONNECTIONS__pgdemo__database: qlikdb
          SQLPAD_CONNECTIONS__pgdemo__username: ${USERNAME}
          SQLPAD_CONNECTIONS__pgdemo__password: ${PASSWORD}
          SQLPAD_CONNECTIONS__mysql__name: mysql-src-databse
