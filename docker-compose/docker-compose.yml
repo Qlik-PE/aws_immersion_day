@@ -70,23 +70,23 @@ services:
 ## Start PGADMIN, listening on port 5430. This will run on the replnet network
 ## and will allow us to browse the postgres database.
 ##
-   pgadmin:
-      image: dpage/pgadmin4:latest
-      container_name: pgadmin
-      depends_on:
-         - postgres
-      environment:
-         - PGADMIN_DEFAULT_EMAIL=${LOGIN}
-         - PGADMIN_DEFAULT_PASSWORD=${PASSWORD}
-         - PGADMIN_LISTEN_PORT=5430
-      restart: always
-      volumes:
-         - pgadmin-data:/var/lib/pgadmin
-         - ./pgadmin.json:/pgadmin4/servers.json
-      ports:
-         - 5430:5430
-      networks:
-         - replnet
+#   pgadmin:
+#      image: dpage/pgadmin4:latest
+#      container_name: pgadmin
+#      depends_on:
+#         - postgres
+#      environment:
+#         - PGADMIN_DEFAULT_EMAIL=${LOGIN}
+#         - PGADMIN_DEFAULT_PASSWORD=${PASSWORD}
+#         - PGADMIN_LISTEN_PORT=5430
+#      restart: always
+#      volumes:
+#         - pgadmin-data:/var/lib/pgadmin
+#         - ./pgadmin.json:/pgadmin4/servers.json
+#      ports:
+#         - 5430:5430
+#      networks:
+#         - replnet
 ##
 ##
 ## run zookeeper. Needed for Kafka. Ports not exposed to localhost. Hostname 
@@ -169,24 +169,24 @@ services:
 #kafdrop
 #
    kafdrop:
-     image: obsidiandynamics/kafdrop
-     container_name: kafdrop
-     restart: "no"
-     ports:
-       - 9000:9000
-     networks:
-       - replnet
-     environment:
-       KAFKA_BROKERCONNECT: "kafka:29092"
-       JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
-     depends_on:
-       - kafka
+      image: obsidiandynamics/kafdrop
+      container_name: kafdrop
+      restart: "no"
+      ports:
+         - 9000:9000
+      networks:
+         - replnet
+      environment:
+         KAFKA_BROKERCONNECT: "kafka:29092"
+         JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
+      depends_on:
+         - kafka
    sqlpad:
-    image: sqlpad/sqlpad:5
-    hostname: 'sqlpad'
-    ports:
-      - '3000:3000'
-    environment:
+      image: sqlpad/sqlpad:5
+      hostname: 'sqlpad'
+      ports:
+         - '3000:3000'
+   environment:
       SQLPAD_ADMIN: ${LOGIN}
       SQLPAD_ADMIN_PASSWORD: ${PASSWORD}
       SQLPAD_APP_LOG_LEVEL: debug
@@ -200,8 +200,10 @@ services:
       SQLPAD_CONNECTIONS__pgdemo__password: sqlpad
       SQLPAD_CONNECTIONS__pgdemo__multiStatementTransactionEnabled: 'true'
       SQLPAD_CONNECTIONS__pgdemo__idleTimeoutSeconds: 86400
-    volumes:
+   volumes:
       - ./seed-data:/etc/sqlpad/seed-data
+   networks:
+         - replnet
 
 volumes:
    postgres-data:
