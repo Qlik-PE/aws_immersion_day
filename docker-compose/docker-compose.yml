@@ -92,58 +92,58 @@ services:
 ## run zookeeper. Needed for Kafka. Ports not exposed to localhost. Hostname 
 ## should be "zkhost" and be visible to the Replicate server.
 ##
-   zookeeper:
-      image: confluentinc/cp-zookeeper:4.0.0
-      container_name: zkhost
-      restart: always
-      environment:
-         - ZOOKEEPER_CLIENT_PORT=32181
-         - ZOOKEEPER_TICK_TIME=2000
-         - ZOOKEEPER_SYNC_LIMIT=2         
-         - ZOOKEEPER_SERVER_ID=1
-      ports:
-         - 32181:32181
-      networks:
-         - replnet
-##
+#    zookeeper:
+#       image: confluentinc/cp-zookeeper:4.0.0
+#       container_name: zkhost
+#       restart: always
+#       environment:
+#          - ZOOKEEPER_CLIENT_PORT=32181
+#          - ZOOKEEPER_TICK_TIME=2000
+#          - ZOOKEEPER_SYNC_LIMIT=2         
+#          - ZOOKEEPER_SERVER_ID=1
+#       ports:
+#          - 32181:32181
+#       networks:
+#          - replnet
+# ##
 ## run Kafka. Requires zookeeper to be running. Ports not exposed to locahost. 
 ## Hostname should be "kafka" and should be visible to the Replicate server.
 ##
-   kafka:
-      image: confluentinc/cp-kafka:4.0.0
-      container_name: kafka
-      depends_on:
-         - zookeeper
-      restart: always
-      environment:
-         - KAFKA_ZOOKEEPER_CONNECT=zkhost:32181
-         - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:29092
-         - KAFKA_BROKER_ID=1
-         - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
-      ports:
-         - 29092:29092
-      networks:
-         - replnet
+   # kafka:
+   #    image: confluentinc/cp-kafka:4.0.0
+   #    container_name: kafka
+   #    depends_on:
+   #       - zookeeper
+   #    restart: always
+   #    environment:
+   #       - KAFKA_ZOOKEEPER_CONNECT=zkhost:32181
+   #       - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:29092
+   #       - KAFKA_BROKER_ID=1
+   #       - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+   #    ports:
+   #       - 29092:29092
+   #    networks:
+   #       - replnet
 ##
 ## run the confluent schema registry. Requires zookeeper to be running. 
 ## Hostname should be "sreghost" and should be visible to the Replicate server.
 ##
-   schema-registry:
-      image: confluentinc/cp-schema-registry:4.0.0
-      container_name: sreghost
-      depends_on:
-         - zookeeper
-         - kafka
-      restart: always
-      environment:
-         - SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL=zkhost:32181
-         - SCHEMA_REGISTRY_HOST_NAME=sreghost
-         - SCHEMA_REGISTRY_LISTENERS=http://sreghost:8081
-         - SCHEMA_REGISTRY_DEBUG=true
-      ports:
-         - 8081
-      networks:
-         - replnet
+   # schema-registry:
+   #    image: confluentinc/cp-schema-registry:4.0.0
+   #    container_name: sreghost
+   #    depends_on:
+   #       - zookeeper
+   #       - kafka
+   #    restart: always
+   #    environment:
+   #       - SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL=zkhost:32181
+   #       - SCHEMA_REGISTRY_HOST_NAME=sreghost
+   #       - SCHEMA_REGISTRY_LISTENERS=http://sreghost:8081
+   #       - SCHEMA_REGISTRY_DEBUG=true
+   #    ports:
+   #       - 8081
+   #    networks:
+   #       - replnet
 ##
 ## run the Kafka REST proxy server
 ##
@@ -168,19 +168,19 @@ services:
 #         - replnet
 #kafdrop
 #
-   kafdrop:
-      image: obsidiandynamics/kafdrop
-      container_name: kafdrop
-      restart: "no"
-      ports:
-         - 9000:9000
-      networks:
-         - replnet
-      environment:
-         KAFKA_BROKERCONNECT: "kafka:29092"
-         JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
-      depends_on:
-         - kafka
+   # kafdrop:
+   #    image: obsidiandynamics/kafdrop
+   #    container_name: kafdrop
+   #    restart: "no"
+   #    ports:
+   #       - 9000:9000
+   #    networks:
+   #       - replnet
+   #    environment:
+   #       KAFKA_BROKERCONNECT: "kafka:29092"
+   #       JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
+   #    depends_on:
+   #       - kafka
    sqlpad:
       image: sqlpad/sqlpad:5
       hostname: 'sqlpad'
@@ -191,13 +191,13 @@ services:
          SQLPAD_ADMIN_PASSWORD: ${PASSWORD}
          SQLPAD_APP_LOG_LEVEL: debug
          SQLPAD_WEB_LOG_LEVEL: warn
-         SQLPAD_SEED_DATA_PATH: /etc/sqlpad/seed-data
+         #SQLPAD_SEED_DATA_PATH: /etc/sqlpad/seed-data
          SQLPAD_CONNECTIONS__pgdemo__name: Postgres demo
          SQLPAD_CONNECTIONS__pgdemo__driver: postgres
          SQLPAD_CONNECTIONS__pgdemo__host: postgres
-         SQLPAD_CONNECTIONS__pgdemo__database: sqlpad
-         SQLPAD_CONNECTIONS__pgdemo__username: sqlpad
-         SQLPAD_CONNECTIONS__pgdemo__password: sqlpad
+         SQLPAD_CONNECTIONS__pgdemo__database: qlikdb
+         SQLPAD_CONNECTIONS__pgdemo__username: ${USERNAME}
+         SQLPAD_CONNECTIONS__pgdemo__password: ${PASSWORD}
          SQLPAD_CONNECTIONS__pgdemo__multiStatementTransactionEnabled: 'true'
          SQLPAD_CONNECTIONS__pgdemo__idleTimeoutSeconds: 86400
       volumes:
