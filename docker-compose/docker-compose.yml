@@ -201,13 +201,13 @@ services:
          SQLPAD_DB_PATH: '/var/lib/sqlpad'
          SQLPAD_DB_IN_MEMORY: 'false'
          SQLPAD_QUERY_RESULT_STORE: 'database'
-         SQLPAD_CONNECTIONS__pgdemo__name: postgres-dw
+         SQLPAD_CONNECTIONS__pgdemo__name: postgres-tgt-databse
          SQLPAD_CONNECTIONS__pgdemo__driver: postgres
          SQLPAD_CONNECTIONS__pgdemo__host: postgresdb
          SQLPAD_CONNECTIONS__pgdemo__database: testdrive
          SQLPAD_CONNECTIONS__pgdemo__username: ${USERNAME}
          SQLPAD_CONNECTIONS__pgdemo__password: ${PASSWORD}
-         SQLPAD_CONNECTIONS__mysql__name: 'mysql-source'
+         SQLPAD_CONNECTIONS__mysql__name: mysql-src-databse
          SQLPAD_CONNECTIONS__mysql__driver: mysql
          SQLPAD_CONNECTIONS__mysql__host: mysqldb
          SQLPAD_CONNECTIONS__mysql__port: 3306
