@@ -71,23 +71,23 @@ services:
 ## Start PGADMIN, listening on port 5430. This will run on the replnet network
 ## and will allow us to browse the postgres database.
 ##
-  pgadmin:
-     image: dpage/pgadmin4:latest
-     container_name: pgadmin
-     depends_on:
-        - postgres
-     environment:
-        - PGADMIN_DEFAULT_EMAIL=${LOGIN}
-        - PGADMIN_DEFAULT_PASSWORD=${PASSWORD}
-        - PGADMIN_LISTEN_PORT=5430
-     restart: always
-     volumes:
-        - pgadmin-data:/var/lib/pgadmin
-        - ./pgadmin.json:/pgadmin4/servers.json
-     ports:
-        - 5430:5430
-     networks:
-        - replnet
+   pgadmin:
+      image: dpage/pgadmin4:latest
+      container_name: pgadmin
+      depends_on:
+         - postgres
+      environment:
+         - PGADMIN_DEFAULT_EMAIL=${LOGIN}
+         - PGADMIN_DEFAULT_PASSWORD=${PASSWORD}
+         - PGADMIN_LISTEN_PORT=5430
+      restart: always
+      volumes:
+         - pgadmin-data:/var/lib/pgadmin
+         - ./pgadmin.json:/pgadmin4/servers.json
+      ports:
+         - 5430:5430
+      networks:
+         - replnet
 ##
 ##
 ## run zookeeper. Needed for Kafka. Ports not exposed to localhost. Hostname 
