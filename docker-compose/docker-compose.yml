@@ -1,3 +1,4 @@
+## 
 ## Set up  AWS Immersion Day
 ##
 ## Maintained by: John Park
@@ -75,13 +76,13 @@ services:
       depends_on:
          - postgres
       environment:
-         - PGADMIN_DEFAULT_EMAIL=pgadmin@qlik.com
+         - PGADMIN_DEFAULT_EMAIL=${LOGIN}
          - PGADMIN_DEFAULT_PASSWORD=${PASSWORD}
          - PGADMIN_LISTEN_PORT=5430
       restart: always
       volumes:
          - pgadmin-data:/var/lib/pgadmin
-         #mys- /testdrive/pgadmin.json:/pgadmin4/servers.json
+         - ./pgadmin.json:/pgadmin4/servers.json
       ports:
          - 5430:5430
       networks:
@@ -100,6 +101,8 @@ services:
          - ZOOKEEPER_TICK_TIME=2000
          - ZOOKEEPER_SYNC_LIMIT=2         
          - ZOOKEEPER_SERVER_ID=1
+      ports:
+         - 32181:32181
       networks:
          - replnet
 ##
@@ -138,7 +141,7 @@ services:
          - SCHEMA_REGISTRY_LISTENERS=http://sreghost:8081
          - SCHEMA_REGISTRY_DEBUG=true
       ports:
-         - 8081:8081
+         - 8081
       networks:
          - replnet
 ##
@@ -163,18 +166,43 @@ services:
 #         - 8082:8082
 #      networks:
 #         - replnet
-volumes:
-   postgres-data:
-   pgadmin-data:
-   mysql-data:
-networks:
-   replnet:
-      driver: bridge
+#kafdrop
+#
+   kafdrop:
+     image: obsidiandynamics/kafdrop
+     container_name: kafdrop
+     restart: "no"
+     ports:
+       - 9000:9000
+     networks:
+       - replnet
+     environment:
+       KAFKA_BROKERCONNECT: "kafka:29092"
+       JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
+     depends_on:
+       - kafka
+   sqlpad:
+    image: sqlpad/sqlpad:5
+    hostname: 'sqlpad'
+    ports:
+      - '3000:3000'
+    environment:
+      SQLPAD_ADMIN: ${LOGIN}
+      SQLPAD_ADMIN_PASSWORD: ${PASSWORD}
+      SQLPAD_APP_LOG_LEVEL: debug
+      SQLPAD_WEB_LOG_LEVEL: warn
+      SQLPAD_SEED_DATA_PATH: /etc/sqlpad/seed-data
+      SQLPAD_CONNECTIONS__pgdemo__name: Postgres demo
+      SQLPAD_CONNECTIONS__pgdemo__driver: postgres
+      SQLPAD_CONNECTIONS__pgdemo__host: postgres
+      SQLPAD_CONNECTIONS__pgdemo__database: sqlpad
+      SQLPAD_CONNECTIONS__pgdemo__username: sqlpad
+      SQLPAD_CONNECTIONS__pgdemo__password: sqlpad
+      SQLPAD_CONNECTIONS__pgdemo__multiStatementTransactionEnabled: 'true'
+      SQLPAD_CONNECTIONS__pgdemo__idleTimeoutSeconds: 86400
+    volumes:
+      - ./seed-data:/etc/sqlpad/seed-data
 
-         - 3306:3306
-      networks:
-         - replnet
-      command: mysqld --datadir=/var/lib/mysql --user=mysql --server-id=1 --log-bin=mysql-bin.log --binlog-format=ROW --expire-logs-days=1 --default-storage-engine=InnoDB
 volumes:
    postgres-data:
    pgadmin-data:
