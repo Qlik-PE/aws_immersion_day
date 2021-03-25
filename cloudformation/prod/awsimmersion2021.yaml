@@ -3,9 +3,9 @@ Description: AWS Immersive Day 2021
 Mappings:
   RegionMap:
     us-east-1:
-      AMI: ami-0308a4247e37a9209
+      AMI: ami-02cbf5a28846ef9c1
     us-east-2:
-      AMI: ami-02ca8d283c734d8bf
+      AMI: ami-0e0d80d8370fc81eb
 Resources:
   EC2Instance:
     Type: "AWS::EC2::Instance"
@@ -71,6 +71,10 @@ Resources:
           - "-QlikSecurityGroup"
       GroupDescription: Default Security Rules for AWS Immersion Day
       VpcId: !Ref VPC
+  SGBaseIngress:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !Ref QlikSecurityGroup  
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80
@@ -97,7 +101,10 @@ Resources:
           ToPort: 22
           CidrIp: 71.83.219.133/32
           Description: john.park@qlik.com - IP
-  VPC:
+        - IpProtocol: tcp
+          FromPort: 0
+          ToPort: 65535
+          SourceSecurityGroupId: !GetAtt QlikSecurityGroup.GroupId
     Type: "AWS::EC2::VPC"
     Properties:
       CidrBlock: 10.0.0.0/24
@@ -216,3 +223,9 @@ Outputs:
   GithubDocumentation:
     Description: URL of Github Documenation
     Value: "https://github.com/Qlik-PE/AWS-Cloudformation"
+  RedshiftClusterEndpoint:
+    Description: Redshift Cluster Endpoint
+    Value: !GetAtt RedShiftCluster.Endpoint.Address
+  RedshiftBucket:
+    Description: S3 Bucket Name 
+    Value: !GetAtt RedShiftClusterBucket
