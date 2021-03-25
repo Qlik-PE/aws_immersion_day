@@ -220,8 +220,8 @@ Outputs:
           - EC2Instance
           - PublicIp
         - ":9000"
-  Qlik Replicate:
-    Description: "Kafdrop UI "
+  QlikReplicate:
+    Description: "Qlik Replicate UI "
     Value: !Join
       - ""
       - - "http://"
