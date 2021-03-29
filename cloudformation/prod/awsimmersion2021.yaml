@@ -61,7 +61,7 @@ Resources:
       BucketName: !Join
         - ""
         - - !Ref "AWS::StackName"
-          - "-bucket"
+          - "-qlikreplicate"
   QlikSecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
