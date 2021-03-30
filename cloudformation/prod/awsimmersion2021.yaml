@@ -207,7 +207,7 @@ Outputs:
     Description: "AWS Immersion Day Documentation "
     Value: !Join
       - ""
-      - - "http://"
+      - - "https://qlik-aws-immersion2021.netlify.app/"
         - !GetAtt
           - EC2Instance
           - PublicIp
