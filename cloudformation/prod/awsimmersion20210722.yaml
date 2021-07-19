@@ -1,0 +1,291 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: AWS Immersive Day 2021
+Mappings:
+  RegionMap:
+    us-east-1:
+      AMI: ami-02cbf5a28846ef9c1
+    us-east-2:
+      AMI: ami-0e0d80d8370fc81eb
+Resources:
+  EC2Instance:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      ImageId: !FindInMap
+        - RegionMap
+        - !Ref "AWS::Region"
+        - AMI
+      InstanceType: m5.large
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: "True"
+          DeleteOnTermination: "True"
+          SubnetId: !Ref PublicSubnet
+          DeviceIndex: "0"
+          GroupSet:
+            - !Ref QlikSecurityGroup
+      EbsOptimized: true
+      Tags:
+        - Key: Name
+          Value: !Join
+            - ""
+            - - !Ref "AWS::StackName"
+              - "-QlikImmersionDayNode"
+        - Key: StackName
+          Value: !Ref "AWS::StackName"
+        - Key: Owner
+          Value: john.park@qlik.com
+        - Key: 24x7
+          Value: 24x7
+  RedShiftCluster:
+    Type: "AWS::Redshift::Cluster"
+    Properties:
+      AllowVersionUpgrade: "true"
+      AutomatedSnapshotRetentionPeriod: "0"
+      ClusterType: single-node
+      DBName: testdrive
+      MasterUsername: qlik123
+      MasterUserPassword: Aws_immersion123
+      NodeType: dc2.large
+      PubliclyAccessible: "true"
+      VpcSecurityGroupIds:
+        - !Ref QlikSecurityGroup
+      ClusterSubnetGroupName: !Ref RedshiftClusterSubnetGroup
+  RedshiftClusterSubnetGroup:
+    Type: "AWS::Redshift::ClusterSubnetGroup"
+    Properties:
+      Description: Redshift Cluster Subnet Group
+      SubnetIds:
+        - !Ref PublicSubnet
+  RedShiftClusterBucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: !Sub 'qlik-immersionday-${AWS::AccountId}'
+  AuroraDBCluster:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      BackupRetentionPeriod: 7
+      DBClusterIdentifier: qlik-aurora-dbcluster
+      DatabaseName: aws_immersion_day
+      DBSubnetGroupName: !Ref AuroraDBSubnetGroup
+      DeletionProtection: false
+      Engine: aurora-postgresql
+      EngineMode: provisioned
+      EngineVersion: 10.11
+      MasterUserPassword: Aws_immersion123
+      MasterUsername: qlik123
+      Port: 5432
+      SourceRegion: !Ref 'AWS::Region'
+      StorageEncrypted: true
+      VpcSecurityGroupIds:
+        - !Ref QlikSecurityGroup
+  AuroraDBSubnetGroup:
+    Type: 'AWS::RDS::DBSubnetGroup'
+    Properties:
+      DBSubnetGroupDescription: !Ref 'AWS::StackName'
+      SubnetIds:
+        - !Ref PublicSubnet
+  QlikSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupName: !Join
+        - ""
+        - - !Ref "AWS::StackName"
+          - "-QlikSecurityGroup"
+      GroupDescription: Default Security Rules for AWS Immersion Day
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+          Description: john.park@qlik.com - IP
+        - IpProtocol: tcp
+          FromPort: 3552
+          ToPort: 3552
+          CidrIp: 0.0.0.0/0
+          Description: Qlik Replicate
+        - IpProtocol: tcp
+          FromPort: 9000
+          ToPort: 9000
+          CidrIp: 0.0.0.0/0
+          Description: Kafdrop
+        - IpProtocol: tcp
+          FromPort: 3000
+          ToPort: 3000
+          CidrIp: 0.0.0.0/0
+          Description: Sqlpad
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 71.83.219.133/32
+          Description: john.park@qlik.com - IP
+  SGBaseIngress:
+    Type: "AWS::EC2::SecurityGroupIngress"
+    Properties:
+      GroupId: !Ref QlikSecurityGroup
+      IpProtocol: tcp
+      FromPort: 5439
+      ToPort: 5439
+      SourceSecurityGroupId: !GetAtt QlikSecurityGroup.GroupId
+  VPC:
+    Type: "AWS::EC2::VPC"
+    Properties:
+      CidrBlock: 10.0.0.0/24
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Application
+          Value: !Ref "AWS::StackId"
+        - Key: Name
+          Value: !Join
+            - ""
+            - - !Ref "AWS::StackName"
+              - "-VPC"
+  InternetGateway:
+    Type: "AWS::EC2::InternetGateway"
+    Properties:
+      Tags:
+        - Key: Application
+          Value: !Ref "AWS::StackId"
+        - Key: Network
+          Value: Public
+        - Key: Name
+          Value: !Join
+            - ""
+            - - !Ref "AWS::StackName"
+              - "-IG"
+  AttachGateway:
+    Type: "AWS::EC2::VPCGatewayAttachment"
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+  PublicSubnet:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.0.0/25
+      Tags:
+        - Key: Application
+          Value: !Ref "AWS::StackId"
+        - Key: Network
+          Value: Public
+        - Key: Name
+          Value: !Join
+            - ""
+            - - !Ref "AWS::StackName"
+              - "-PublicSubnet"
+  PublicRouteTable:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Application
+          Value: !Ref "AWS::StackId"
+        - Key: Network
+          Value: Public
+        - Key: Name
+          Value: !Join
+            - ""
+            - - !Ref "AWS::StackName"
+              - "-PublicRouteTable"
+  PublicRoute:
+    Type: "AWS::EC2::Route"
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+  PublicSubnetRouteTableAssociation:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref PublicRouteTable
+Outputs:
+  InstanceName:
+    Description: InstanceId of the newly created EC2 instance
+    Value: !Join
+      - ""
+      - - !Ref "AWS::StackName"
+        - "-QlikImmersionDayNode"
+  InstanceId:
+    Description: InstanceId of the newly created EC2 instance
+    Value: !Ref EC2Instance
+  AavailabilityZone:
+    Description: Availability Zone of the newly created EC2 instance
+    Value: !GetAtt
+      - EC2Instance
+      - AvailabilityZone
+  PublicDNS:
+    Description: "Public DNSName of the newly created QlikImmersionDayNode "
+    Value: !GetAtt
+      - EC2Instance
+      - PublicDnsName
+  PublicIP:
+    Description: "Public DNSName of the newly created NATInstance "
+    Value: !GetAtt
+      - EC2Instance
+      - PublicIp
+  Documentation:
+    Description: "AWS Immersion Day Documentation "
+    Value: !Join
+      - ""
+      - - "https://qlik-aws-immersion2021.netlify.app/"
+        - !GetAtt
+          - EC2Instance
+          - PublicIp
+  Kafdrop:
+    Description: "Kafdrop UI "
+    Value: !Join
+      - ""
+      - - "http://"
+        - !GetAtt
+          - EC2Instance
+          - PublicIp
+        - ":9000"
+  QlikReplicate:
+    Description: "Qlik Replicate UI "
+    Value: !Join
+      - ""
+      - - "http://"
+        - !GetAtt
+          - EC2Instance
+          - PublicIp
+        - ":3552/attunityreplicate"
+  SQLPad:
+    Description: "SQLPad UI "
+    Value: !Join
+      - ""
+      - - "http://"
+        - !GetAtt
+          - EC2Instance
+          - PublicIp
+        - ":3000"
+  VPCName:
+    Description: Name of the newly created VPC
+    Value: !Join
+      - ""
+      - - !Ref "AWS::StackName"
+        - "-QlikImmersionDayNode"
+  VPC:
+    Description: "Id of the newly created VPC "
+    Value: !Ref VPC
+  SecurityGroupName:
+    Description: Name of the newly created Security Group
+    Value: !Join
+      - ""
+      - - !Ref "AWS::StackName"
+        - "-QlikSecurityGroup"
+  SecurityGroup:
+    Description: Id of the newly created EC2 Security Group
+    Value: !Ref QlikSecurityGroup
+  GithubDocumentation:
+    Description: URL of Github Documenation
+    Value: "https://github.com/Qlik-PE/AWS-Cloudformation"
+  RedshiftClusterEndpoint:
+    Description: Redshift Cluster Endpoint
+    Value: !GetAtt RedShiftCluster.Endpoint.Address
+  RedshiftBucket:
+    Description: S3 Bucket Name  Arn
+    Value: !GetAtt RedShiftClusterBucket.Arn
+  RedshiftBucketDomain:
+    Description: S3 Bucket Name DomainName
+    Value: !GetAtt RedShiftClusterBucket.DomainName

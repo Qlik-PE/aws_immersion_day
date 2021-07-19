@@ -7,61 +7,26 @@ Mappings:
     us-east-2:
       AMI: ami-0e0d80d8370fc81eb
 Resources:
-  EC2Instance:
-    Type: "AWS::EC2::Instance"
+
+  AuroraDBCluster:
+    Type: AWS::RDS::DBCluster
     Properties:
-      ImageId: !FindInMap
-        - RegionMap
-        - !Ref "AWS::Region"
-        - AMI
-      InstanceType: m5.large
-      NetworkInterfaces:
-        - AssociatePublicIpAddress: "True"
-          DeleteOnTermination: "True"
-          SubnetId: !Ref PublicSubnet
-          DeviceIndex: "0"
-          GroupSet:
-            - !Ref QlikSecurityGroup
-      EbsOptimized: true
-      Tags:
-        - Key: Name
-          Value: !Join
-            - ""
-            - - !Ref "AWS::StackName"
-              - "-QlikImmersionDayNode"
-        - Key: StackName
-          Value: !Ref "AWS::StackName"
-        - Key: Owner
-          Value: john.park@qlik.com
-        - Key: 24x7
-          Value: 24x7
-  RedShiftCluster:
-    Type: "AWS::Redshift::Cluster"
-    Properties:
-      AllowVersionUpgrade: "true"
-      AutomatedSnapshotRetentionPeriod: "0"
-      ClusterType: single-node
-      DBName: testdrive
-      MasterUsername: qlik123
+      BackupRetentionPeriod: 7
+      DBClusterIdentifier: qlik-aurora-dbcluster
+      DBSubnetGroupName: aws_immersion_subnet
+      DatabaseName: aws_immersion_day
+      DeletionProtection: false
+      Engine: aurora-postgresql
+      EngineMode: provisioned
+      EngineVersion: 10.11
       MasterUserPassword: Aws_immersion123
-      NodeType: dc2.large
-      PubliclyAccessible: "true"
+      MasterUsername: qlik123
+      Port: 5432
+      SourceRegion: !Ref 'AWS::Region'
+      StorageEncrypted: true
       VpcSecurityGroupIds:
         - !Ref QlikSecurityGroup
-      ClusterSubnetGroupName: !Ref RedshiftClusterSubnetGroup
-  RedshiftClusterSubnetGroup:
-    Type: "AWS::Redshift::ClusterSubnetGroup"
-    Properties:
-      Description: Redshift Cluster Subnet Group
-      SubnetIds:
-        - !Ref PublicSubnet
-  RedShiftClusterBucket:
-    Type: "AWS::S3::Bucket"
-    Properties:
-      BucketName: !Join
-        - ""
-        - - !Ref "AWS::StackName"
-          - "-qlikreplicate"
+    
   QlikSecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
