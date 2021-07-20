@@ -3,9 +3,9 @@ Description: AWS Immersive Day 2021
 Mappings:
   RegionMap:
     us-east-1:
-      AMI: ami-02cbf5a28846ef9c1
+      AMI: ami-06743109185b5d440
     us-east-2:
-      AMI: ami-0e0d80d8370fc81eb
+      AMI: ami-0782a1e6099d3cd98
 Resources:
   EC2Instance:
     Type: "AWS::EC2::Instance"
@@ -63,13 +63,13 @@ Resources:
     Type: AWS::RDS::DBCluster
     Properties:
       BackupRetentionPeriod: 7
-      DBClusterIdentifier: qlik-aurora-dbcluster
+      DBClusterIdentifier: !Sub 'qlik-auroracluster-${AWS::AccountId}'
       DatabaseName: aws_immersion_day
       DBSubnetGroupName: !Ref AuroraDBSubnetGroup
       DeletionProtection: false
       Engine: aurora-postgresql
       EngineMode: provisioned
-      EngineVersion: 10.11
+      EngineVersion: 11.9
       MasterUserPassword: Aws_immersion123
       MasterUsername: qlik123
       Port: 5432
@@ -77,6 +77,13 @@ Resources:
       StorageEncrypted: true
       VpcSecurityGroupIds:
         - !Ref QlikSecurityGroup
+  AuroraPrimaryInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: aurora-postgresql
+      DBClusterIdentifier: !Ref "AuroraDBCluster"
+      DBInstanceClass: db.r5.large
+      DBSubnetGroupName: !Ref "AuroraDBSubnetGroup"
   AuroraDBSubnetGroup:
     Type: "AWS::RDS::DBSubnetGroup"
     Properties:
@@ -98,12 +105,17 @@ Resources:
           FromPort: 80
           ToPort: 80
           CidrIp: 0.0.0.0/0
-          Description: john.park@qlik.com - IP
+          Description: Port 80
         - IpProtocol: tcp
           FromPort: 3552
           ToPort: 3552
           CidrIp: 0.0.0.0/0
-          Description: Qlik Replicate
+          Description: Qlik Replicate  
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          CidrIp: 0.0.0.0/0
+          Description: PostgreSQL
         - IpProtocol: tcp
           FromPort: 9000
           ToPort: 9000
@@ -117,7 +129,7 @@ Resources:
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
-          CidrIp: 71.83.219.133/32
+          CidrIp: 71.9.36.22/32
           Description: john.park@qlik.com - IP
   SGBaseIngress:
     Type: "AWS::EC2::SecurityGroupIngress"
